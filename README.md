@@ -1,4 +1,4 @@
-# Logging
+# Gokit Logging
 
 A Go package providing structured logging capabilities built on top of [Zap](https://github.com/uber-go/zap), designed for performance and flexibility across different environments.
 
@@ -16,7 +16,7 @@ The logging package provides a simple yet powerful interface for structured logg
 ## Installation
 
 ```bash
-go get github.com/ralvescosta/gokit/logging
+go get github.com/goxkit/logging
 ```
 
 ## Usage
@@ -26,7 +26,7 @@ go get github.com/ralvescosta/gokit/logging
 ```go
 import (
     "github.com/goxkit/configs"
-    "github.com/ralvescosta/gokit/logging"
+    "github.com/goxkit/logging"
 )
 
 func main() {
@@ -96,7 +96,7 @@ The package includes a MockLogger for use in unit tests:
 import (
     "testing"
 
-    "github.com/ralvescosta/gokit/logging"
+    "github.com/goxkit/logging"
     "github.com/stretchr/testify/assert"
 )
 
