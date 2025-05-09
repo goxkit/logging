@@ -1,5 +1,20 @@
 # Gokit Logging
 
+<p align="center">
+  <a href="https://github.com/goxkit/logging/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
+  </a>
+  <a href="https://pkg.go.dev/github.com/goxkit/logging">
+    <img src="https://godoc.org/github.com/goxkit/logging?status.svg" alt="Go Doc">
+  </a>
+  <a href="https://goreportcard.com/report/github.com/goxkit/logging">
+    <img src="https://goreportcard.com/badge/github.com/goxkit/logging" alt="Go Report Card">
+  </a>
+  <a href="https://github.com/goxkit/logging/actions">
+    <img src="https://github.com/goxkit/logging/actions/workflows/action.yml/badge.svg?branch=main" alt="Build Status">
+  </a>
+</p>
+
 A Go package providing structured logging capabilities built on top of [Zap](https://github.com/uber-go/zap), designed for performance and flexibility across different environments.
 
 ## Overview
