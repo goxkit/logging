@@ -39,12 +39,6 @@ type (
 	}
 )
 
-var (
-	// openFile is a variable that holds the os.OpenFile function,
-	// allowing it to be replaced in tests.
-	openFile = os.OpenFile
-)
-
 // NewDefaultLogger creates a new logger that outputs to stdout.
 // It configures the logger based on the environment:
 // - Production/Staging: Uses JSON encoder
@@ -54,12 +48,19 @@ var (
 func NewDefaultLogger(cfgs *configs.Configs) (Logger, error) {
 	zapLogLevel := mapZapLogLevel(cfgs.AppConfigs)
 
-	if cfgs.AppConfigs.GoEnv == configs.ProductionEnv || cfgs.AppConfigs.GoEnv == configs.StagingEnv {
+	if cfgs.AppConfigs.Environment == configs.ProductionEnv || cfgs.AppConfigs.Environment == configs.StagingEnv {
 		logConfig := zap.NewProductionEncoderConfig()
 		logConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 		encoder := zapcore.NewJSONEncoder(logConfig)
 
-		cfgs.Logger = zap.New(zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), zapLogLevel)).Named(cfgs.AppConfigs.AppName)
+		cfgs.Logger = zap.New(
+			zapcore.NewCore(
+				encoder,
+				zapcore.AddSync(os.Stdout),
+				zapLogLevel,
+			),
+		).
+			Named(cfgs.AppConfigs.Name)
 
 		return cfgs.Logger, nil
 	}
@@ -69,49 +70,13 @@ func NewDefaultLogger(cfgs *configs.Configs) (Logger, error) {
 	logConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	consoleEncoder := zapcore.NewConsoleEncoder(logConfig)
 
-	cfgs.Logger = zap.New(zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), zapLogLevel)).Named(cfgs.AppConfigs.AppName)
-
-	return cfgs.Logger, nil
-}
-
-// NewFileLogger creates a logger that outputs to both a file and stdout.
-// The file path is specified in the configuration.
-// In production/staging environments, it only outputs to the file in JSON format.
-// In development environments, it outputs to both stdout (colored) and the file (JSON).
-func NewFileLogger(cfgs *configs.Configs) (Logger, error) {
-	zapLogLevel := mapZapLogLevel(cfgs.AppConfigs)
-
-	file, err := openFile(
-		cfgs.AppConfigs.LogPath,
-		os.O_APPEND|os.O_CREATE|os.O_WRONLY,
-		0644,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	if cfgs.AppConfigs.GoEnv == configs.ProductionEnv || cfgs.AppConfigs.GoEnv == configs.StagingEnv {
-		logConfig := zap.NewProductionEncoderConfig()
-		logConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-		encoder := zapcore.NewJSONEncoder(logConfig)
-
-		cfgs.Logger = zap.New(zapcore.NewCore(encoder, zapcore.AddSync(file), zapLogLevel)).Named(cfgs.AppConfigs.AppName)
-
-		return cfgs.Logger, nil
-	}
-
-	logConfig := zap.NewDevelopmentEncoderConfig()
-	logConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	logConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	consoleEncoder := zapcore.NewConsoleEncoder(logConfig)
-	fileEncoder := zapcore.NewJSONEncoder(logConfig)
-
-	core := zapcore.NewTee(
-		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), zapLogLevel),
-		zapcore.NewCore(fileEncoder, zapcore.AddSync(file), zapLogLevel),
-	)
-
-	cfgs.Logger = zap.New(core).Named(cfgs.AppConfigs.AppName)
+	cfgs.Logger = zap.New(
+		zapcore.NewCore(
+			consoleEncoder,
+			zapcore.AddSync(os.Stdout),
+			zapLogLevel,
+		),
+	).Named(cfgs.AppConfigs.Name)
 
 	return cfgs.Logger, nil
 }
