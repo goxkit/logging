@@ -10,11 +10,14 @@ import (
 	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	zapInstance "github.com/goxkit/logging/zap"
 )
 
-func Install(cfgs *configs.Configs) (*log.LoggerProvider, error) {
+func Install(cfgs *configs.Configs) (*zap.Logger, error) {
 	ctx := context.Background()
 
 	exp, err := otlploggrpc.New(
@@ -46,5 +49,5 @@ func Install(cfgs *configs.Configs) (*log.LoggerProvider, error) {
 	global.SetLoggerProvider(provider)
 	cfgs.LoggerProvider = provider
 
-	return provider, nil
+	return zapInstance.NewZapLogger(cfgs, provider)
 }

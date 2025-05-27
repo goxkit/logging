@@ -7,11 +7,11 @@
 package logging
 
 import (
-	"os"
-
 	"github.com/goxkit/configs"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	"github.com/goxkit/logging/otlp"
 )
 
 type (
@@ -45,57 +45,10 @@ type (
 // - Development: Uses colored console output
 //
 // The log level is determined by the configuration provided.
-func NewDefaultLogger(cfgs *configs.Configs) (Logger, error) {
-	zapLogLevel := mapZapLogLevel(cfgs.AppConfigs)
-
-	if cfgs.AppConfigs.Environment == configs.ProductionEnv || cfgs.AppConfigs.Environment == configs.StagingEnv {
-		logConfig := zap.NewProductionEncoderConfig()
-		logConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-		encoder := zapcore.NewJSONEncoder(logConfig)
-
-		cfgs.Logger = zap.New(
-			zapcore.NewCore(
-				encoder,
-				zapcore.AddSync(os.Stdout),
-				zapLogLevel,
-			),
-		).
-			Named(cfgs.AppConfigs.Name)
-
-		return cfgs.Logger, nil
+func NewLogger(cfgs *configs.Configs) (Logger, error) {
+	if cfgs.OTLPConfigs.Enabled {
+		return otlp.Install(cfgs)
 	}
 
-	logConfig := zap.NewDevelopmentEncoderConfig()
-	logConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	logConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	consoleEncoder := zapcore.NewConsoleEncoder(logConfig)
-
-	cfgs.Logger = zap.New(
-		zapcore.NewCore(
-			consoleEncoder,
-			zapcore.AddSync(os.Stdout),
-			zapLogLevel,
-		),
-	).Named(cfgs.AppConfigs.Name)
-
-	return cfgs.Logger, nil
-}
-
-// mapZapLogLevel converts the application config log level to the corresponding
-// Zap log level. It defaults to InfoLevel if the level is not recognized.
-func mapZapLogLevel(e *configs.AppConfigs) zapcore.Level {
-	switch e.LogLevel {
-	case configs.DEBUG:
-		return zap.DebugLevel
-	case configs.INFO:
-		return zap.InfoLevel
-	case configs.WARN:
-		return zap.WarnLevel
-	case configs.ERROR:
-		return zap.ErrorLevel
-	case configs.PANIC:
-		return zap.PanicLevel
-	default:
-		return zap.InfoLevel
-	}
+	return nil, nil
 }
