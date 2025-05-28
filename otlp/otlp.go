@@ -2,6 +2,7 @@ package otlp
 
 import (
 	"context"
+	"time"
 
 	"github.com/goxkit/configs"
 	"go.opentelemetry.io/otel/attribute"
@@ -12,7 +13,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/backoff"
 
 	zapInstance "github.com/goxkit/logging/zap"
 )
@@ -23,10 +24,20 @@ func Install(cfgs *configs.Configs) (*zap.Logger, error) {
 	exp, err := otlploggrpc.New(
 		ctx,
 		otlploggrpc.WithEndpoint(cfgs.OTLPConfigs.Endpoint),
-		otlploggrpc.WithInsecure(),
-		otlploggrpc.WithTimeout(0),
+		otlploggrpc.WithTimeout(time.Second*30),
+		otlploggrpc.WithTimeout(cfgs.OTLPConfigs.ExporterTimeout),
 		otlploggrpc.WithCompressor("gzip"),
-		otlploggrpc.WithDialOption(grpc.WithTransportCredentials(insecure.NewCredentials())),
+		otlploggrpc.WithDialOption(
+			grpc.WithConnectParams(grpc.ConnectParams{
+				Backoff: backoff.Config{
+					BaseDelay:  1 * time.Second,
+					Multiplier: 1.6,
+					MaxDelay:   15 * time.Second,
+				},
+				MinConnectTimeout: 0,
+			}),
+		),
+		otlploggrpc.WithInsecure(),
 	)
 	if err != nil {
 		return nil, err

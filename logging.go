@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
+	"github.com/goxkit/logging/noop"
 	"github.com/goxkit/logging/otlp"
 )
 
@@ -50,5 +51,5 @@ func NewLogger(cfgs *configs.Configs) (Logger, error) {
 		return otlp.Install(cfgs)
 	}
 
-	return nil, nil
+	return noop.Install(cfgs)
 }
