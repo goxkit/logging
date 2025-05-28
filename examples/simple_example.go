@@ -3,10 +3,10 @@
 // All rights reserved.
 
 // This example demonstrates using the Goxkit logging package with ConfigsBuilder.
-package main
+package examples
 
 import (
-	"github.com/goxkit/configs_builder"
+	configsBuilder "github.com/goxkit/configs_builder"
 	"go.uber.org/zap"
 )
 
@@ -33,7 +33,7 @@ func main() {
 	cfgs.Logger.Info("Ready to process requests")
 
 	// Example of error logging with context
-	err = performOperation()
+	err = simpleExamplePerformOperation()
 	if err != nil {
 		cfgs.Logger.Error("Operation failed",
 			zap.Error(err),
@@ -44,7 +44,7 @@ func main() {
 	cfgs.Logger.Info("Application shutting down")
 }
 
-func performOperation() error {
+func simpleExamplePerformOperation() error {
 	// This is just a placeholder
 	return nil
 }

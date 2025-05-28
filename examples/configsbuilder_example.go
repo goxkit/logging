@@ -10,8 +10,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/goxkit/configs_builder"
+	"github.com/goxkit/configs"
+	configsBuilder "github.com/goxkit/configs_builder"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
@@ -37,7 +39,7 @@ func ConfigsBuilderBasicExample() {
 	// The logger is automatically configured and available in cfg.Logger
 	cfg.Logger.Info("Application initialized",
 		zap.String("version", "1.0.0"),
-		zap.Int("port", cfg.HTTPConfigs.Port),
+		zap.Int("port", cfg.AppConfigs.Port),
 	)
 
 	// Use the logger in your application code
@@ -100,14 +102,14 @@ func ConfigsBuilderTracingExample() {
 }
 
 // HandleRequest shows how to use the logger in a typical HTTP request handler
-func HandleRequest(ctx context.Context, cfg *configsBuilder.ConfigsBuilder) {
+func HandleRequest(ctx context.Context, cfg *configs.Configs) {
 	// Extract the current span from context (assuming it was created by middleware)
 	span := trace.SpanFromContext(ctx)
 
 	// Add attributes to the span
 	span.SetAttributes(
-		trace.StringAttribute("user.id", "user-123"),
-		trace.StringAttribute("request.type", "GET"),
+		attribute.String("user.id", "user-123"),
+		attribute.String("request.type", "GET"),
 	)
 
 	// Log with span context
@@ -125,7 +127,7 @@ func HandleRequest(ctx context.Context, cfg *configsBuilder.ConfigsBuilder) {
 	)
 
 	// Error handling example
-	if err := performOperation(); err != nil {
+	if err := configsBuilderPerformOperation(); err != nil {
 		cfg.Logger.Error("Operation failed",
 			zap.Error(err),
 			zap.String("operation", "user_lookup"),
@@ -140,7 +142,7 @@ func HandleRequest(ctx context.Context, cfg *configsBuilder.ConfigsBuilder) {
 	)
 }
 
-func performOperation() error {
+func configsBuilderPerformOperation() error {
 	// This is just a placeholder
 	return nil
 }
