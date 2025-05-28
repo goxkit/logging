@@ -1,3 +1,7 @@
+// Copyright (c) 2025, The GoKit Authors
+// MIT License
+// All rights reserved.
+
 package otlp
 
 import (
@@ -8,7 +12,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/log/global"
-	"go.opentelemetry.io/otel/sdk/log"
+	sdklog "go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.uber.org/zap"
@@ -24,7 +28,7 @@ func Install(cfgs *configs.Configs) (*zap.Logger, error) {
 	exp, err := otlploggrpc.New(
 		ctx,
 		otlploggrpc.WithEndpoint(cfgs.OTLPConfigs.Endpoint),
-		otlploggrpc.WithTimeout(time.Second*30),
+		otlploggrpc.WithReconnectionPeriod(cfgs.OTLPConfigs.ExporterReconnectionPeriod),
 		otlploggrpc.WithTimeout(cfgs.OTLPConfigs.ExporterTimeout),
 		otlploggrpc.WithCompressor("gzip"),
 		otlploggrpc.WithDialOption(
@@ -43,10 +47,10 @@ func Install(cfgs *configs.Configs) (*zap.Logger, error) {
 		return nil, err
 	}
 
-	processor := log.NewBatchProcessor(exp)
-	provider := log.NewLoggerProvider(
-		log.WithProcessor(processor),
-		log.WithResource(resource.NewWithAttributes(
+	processor := sdklog.NewBatchProcessor(exp)
+	provider := sdklog.NewLoggerProvider(
+		sdklog.WithProcessor(processor),
+		sdklog.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
 			semconv.ServiceNameKey.String(cfgs.AppConfigs.Name),
 			semconv.ServiceNamespaceKey.String(cfgs.AppConfigs.Namespace),

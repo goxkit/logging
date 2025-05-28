@@ -123,6 +123,7 @@ func TestSomething(t *testing.T) {
 
     // Test your system with the mock logger
     // ...
+    logger.Info("setting context", zap.Any("context", ctx))
 }
 ```
 
@@ -143,3 +144,7 @@ By using Zap as the underlying logger, this package inherits Zap's performance b
 ## License
 
 MIT
+
+
+
+https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/bridges/otelzap/example_test.go#L31C2-L31C57
