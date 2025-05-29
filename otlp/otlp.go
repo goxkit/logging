@@ -10,9 +10,9 @@ package otlp
 
 import (
 	"context"
-	"time"
 
 	"github.com/goxkit/configs"
+	"github.com/goxkit/otel/otlpgrpc"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/log/global"
@@ -20,8 +20,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/backoff"
 
 	zapInstance "github.com/goxkit/logging/zap"
 )
@@ -47,23 +45,17 @@ import (
 func Install(cfgs *configs.Configs) (*zap.Logger, error) {
 	ctx := context.Background()
 
+	if cfgs.OTLPExporterConn == nil {
+		conn, err := otlpgrpc.NewExporterGRPCClient(cfgs)
+		if err != nil {
+			return nil, err
+		}
+		cfgs.OTLPExporterConn = conn
+	}
+
 	exp, err := otlploggrpc.New(
 		ctx,
-		otlploggrpc.WithEndpoint(cfgs.OTLPConfigs.Endpoint),
-		otlploggrpc.WithReconnectionPeriod(cfgs.OTLPConfigs.ExporterReconnectionPeriod),
-		otlploggrpc.WithTimeout(cfgs.OTLPConfigs.ExporterTimeout),
-		otlploggrpc.WithCompressor("gzip"),
-		otlploggrpc.WithDialOption(
-			grpc.WithConnectParams(grpc.ConnectParams{
-				Backoff: backoff.Config{
-					BaseDelay:  1 * time.Second,
-					Multiplier: 1.6,
-					MaxDelay:   15 * time.Second,
-				},
-				MinConnectTimeout: 0,
-			}),
-		),
-		otlploggrpc.WithInsecure(),
+		otlploggrpc.WithGRPCConn(cfgs.OTLPExporterConn),
 	)
 	if err != nil {
 		return nil, err
