@@ -18,7 +18,7 @@ import (
 	"go.opentelemetry.io/otel/log/global"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.28.0"
 	"go.uber.org/zap"
 
 	zapInstance "github.com/goxkit/logging/zap"
@@ -66,12 +66,11 @@ func Install(cfgs *configs.Configs) (*zap.Logger, error) {
 		sdklog.WithProcessor(processor),
 		sdklog.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(cfgs.AppConfigs.Name),
-			semconv.ServiceNamespaceKey.String(cfgs.AppConfigs.Namespace),
+			semconv.ServiceName(cfgs.AppConfigs.Name),
+			semconv.ServiceNamespace(cfgs.AppConfigs.Namespace),
 			attribute.String("service.environment", cfgs.AppConfigs.Environment.String()),
-			semconv.DeploymentEnvironmentKey.String(cfgs.AppConfigs.Environment.String()),
-			semconv.TelemetrySDKLanguageKey.String("go"),
-			semconv.TelemetrySDKLanguageGo.Key.Bool(true),
+			semconv.DeploymentEnvironmentName(cfgs.AppConfigs.Environment.String()),
+			semconv.TelemetrySDKLanguageGo,
 		)),
 	)
 
